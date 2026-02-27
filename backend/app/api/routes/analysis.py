@@ -192,9 +192,13 @@ async def get_analysis_status(
         processing_time_seconds=analysis.processing_time_seconds,
     )
 
-    # Add error message if failed
+    # Add error message if failed (sanitize to prevent leaking internal details)
     if analysis.status == AnalysisStatusEnum.FAILED:
-        response.message = analysis.error_message or "Analysis failed"
+        error_msg = analysis.error_message or "Analysis failed"
+        # Strip any stack trace or file path details that may have been stored
+        if "\n" in error_msg or "Traceback" in error_msg or "/" in error_msg:
+            error_msg = "Analysis failed due to an internal error"
+        response.message = error_msg
 
     # Add success message if completed
     if analysis.status == AnalysisStatusEnum.COMPLETED:

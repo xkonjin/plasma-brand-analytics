@@ -81,12 +81,12 @@ class Settings(BaseSettings):
     # Debug & Documentation Settings
     # -------------------------------------------------------------------------
     # Enable OpenAPI documentation endpoints (/docs, /redoc, /openapi.json)
-    # Should be False in production unless explicitly needed
+    # Defaults to True only in development/test; override via ENABLE_DOCS env var
     ENABLE_DOCS: bool = True
 
     # Enable detailed error messages in API responses
-    # Should be False in production to prevent information leakage
-    ENABLE_DEBUG_ERRORS: bool = True
+    # SECURITY: Default False. Only enable in development via ENABLE_DEBUG_ERRORS=true
+    ENABLE_DEBUG_ERRORS: bool = False
 
     # -------------------------------------------------------------------------
     # Authentication Settings

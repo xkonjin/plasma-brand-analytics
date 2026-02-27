@@ -193,9 +193,12 @@ async def download_pdf(
             },
         )
     except Exception as e:
+        # Log the actual error server-side but don't expose to client
+        import logging
+        logging.getLogger(__name__).exception("PDF generation failed for analysis %s", analysis_id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to generate PDF: {str(e)}",
+            detail="Failed to generate PDF report. Please try again or contact support.",
         )
 
 

@@ -50,15 +50,22 @@ def validate_url(url: str) -> tuple[bool, str]:
         return False, "URL must include a domain"
 
     hostname = parsed.hostname or ""
-    if hostname.lower() in BLOCKED_HOSTS:
+
+    # Also check the raw netloc for IPv6 patterns that urlparse misses
+    netloc = parsed.netloc or ""
+    if hostname.lower() in BLOCKED_HOSTS or netloc.lower() in BLOCKED_HOSTS:
         return False, "This host is not allowed"
 
-    try:
-        ip = ipaddress.ip_address(hostname)
-        if ip.is_private or ip.is_loopback or ip.is_link_local:
-            return False, "Private IP addresses are not allowed"
-    except ValueError:
-        pass
+    # Check both hostname and raw netloc for IP-based SSRF
+    for addr_str in (hostname, netloc.split(":")[0].strip("[]")):
+        if not addr_str:
+            continue
+        try:
+            ip = ipaddress.ip_address(addr_str)
+            if ip.is_private or ip.is_loopback or ip.is_link_local:
+                return False, "Private IP addresses are not allowed"
+        except ValueError:
+            pass
 
     if len(url) > 2048:
         return False, "URL exceeds maximum length (2048 characters)"
@@ -78,6 +85,11 @@ def validate_email(email: str) -> tuple[bool, str]:
 
 def normalize_url(url: str) -> str:
     url = url.strip()
+    # Reject dangerous schemes before normalization
+    lower = url.lower()
+    for scheme in BLOCKED_SCHEMES:
+        if lower.startswith(f"{scheme}:"):
+            raise ValueError(f"URL scheme '{scheme}' is not allowed")
     if not url.startswith(("http://", "https://")):
         url = f"https://{url}"
     return url

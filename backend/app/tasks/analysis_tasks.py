@@ -230,8 +230,9 @@ async def _run_analysis_async(analysis_id: str) -> Dict[str, Any]:
             # -----------------------------------------------------------------
             # Handle Failure
             # -----------------------------------------------------------------
-            error_message = f"{type(e).__name__}: {str(e)}"
-            error_traceback = traceback.format_exc()
+            # Store sanitized error for DB (no stack trace, no internal details)
+            error_message = f"Analysis failed: {type(e).__name__}"
+            error_traceback = traceback.format_exc()  # For server-side logging only
 
             # Update analysis record
             result = await session.execute(
@@ -253,9 +254,11 @@ async def _run_analysis_async(analysis_id: str) -> Dict[str, Any]:
 
                 await session.commit()
 
-            # Log the full traceback
-            print(f"Analysis {analysis_id} failed: {error_message}")
-            print(error_traceback)
+            # Log the full traceback server-side only (never send to client)
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("Analysis %s failed: %s", analysis_id, error_message)
+            logger.debug("Traceback: %s", error_traceback)
 
             return {
                 "status": "failed",

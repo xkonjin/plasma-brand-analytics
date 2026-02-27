@@ -43,22 +43,22 @@ class TestCreateInvoice:
             "/api/v1/payment/invoice",
             json={"payer_address": "not_an_address"},
         )
-        assert response.status_code == 400
-        assert "invalid" in response.json()["detail"].lower()
+        # Pydantic field_validator returns 422 Unprocessable Entity
+        assert response.status_code == 422
 
     async def test_rejects_short_address(self, client: AsyncClient):
         response = await client.post(
             "/api/v1/payment/invoice",
             json={"payer_address": "0x1234"},
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
 
     async def test_rejects_missing_0x_prefix(self, client: AsyncClient):
         response = await client.post(
             "/api/v1/payment/invoice",
             json={"payer_address": "a" * 42},
         )
-        assert response.status_code == 400
+        assert response.status_code == 422
 
 
 class TestGetInvoiceStatus:

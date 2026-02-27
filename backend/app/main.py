@@ -132,8 +132,8 @@ app.add_middleware(
     allow_origin_regex=settings.CORS_ORIGIN_REGEX,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID"],
-    expose_headers=["X-Request-ID", "X-Correlation-ID"],
+    allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID", "X-API-Key", "X-Invoice-ID"],
+    expose_headers=["X-Request-ID", "X-Correlation-ID", "X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset", "Retry-After"],
     max_age=86400,  # Cache preflight requests for 24 hours
 )
 

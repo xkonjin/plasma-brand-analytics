@@ -104,12 +104,10 @@ class TestAnalysisRequest:
         assert req.industry is None
         assert req.email is None
 
-    def test_file_url_gets_normalized_to_https(self):
-        """Note: normalize_url adds https:// prefix to non-http URLs.
-        This is a known limitation - the file:// scheme gets mangled."""
-        req = AnalysisRequest(url="file:///etc/passwd")
-        # normalize_url turns this into https://file///etc/passwd
-        assert str(req.url).startswith("https://")
+    def test_rejects_file_url(self):
+        """normalize_url now rejects blocked schemes before normalization."""
+        with pytest.raises(ValidationError):
+            AnalysisRequest(url="file:///etc/passwd")
 
     def test_rejects_metadata_url(self):
         with pytest.raises(ValidationError):

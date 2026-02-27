@@ -132,14 +132,10 @@ class TestValidateUrl:
         is_valid, error = validate_url("http://[::1]")
         assert is_valid is False
 
-    def test_bare_ipv6_loopback_passes_as_no_hostname(self):
-        """Note: bare IPv6 like http://::1 parses hostname=None.
-        urlparse requires brackets: http://[::1]. This is a known gap."""
+    def test_bare_ipv6_loopback_is_blocked(self):
+        """Bare IPv6 like http://::1 is now blocked via netloc check."""
         is_valid, _ = validate_url("http://::1")
-        # Without brackets, urlparse yields hostname=None, so netloc exists
-        # but hostname is None. The blocklist check on None doesn't block it.
-        # This is documented as a hardening opportunity.
-        assert is_valid is True  # documents current (imperfect) behavior
+        assert is_valid is False
 
     def test_rejects_long_url(self):
         long_url = "https://example.com/" + "a" * 2048

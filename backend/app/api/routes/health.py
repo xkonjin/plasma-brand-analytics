@@ -87,7 +87,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)) -> Dict[str,
     except Exception as e:
         checks["database"] = {
             "status": "unhealthy",
-            "error": str(e),
+            "error": "connection_failed",  # Don't leak internal error details
         }
         overall_status = "unhealthy"
 
@@ -107,7 +107,7 @@ async def detailed_health_check(db: AsyncSession = Depends(get_db)) -> Dict[str,
     except Exception as e:
         checks["redis"] = {
             "status": "unhealthy",
-            "error": str(e),
+            "error": "connection_failed",  # Don't leak internal error details
         }
         overall_status = "degraded"  # Redis failure is not critical
 

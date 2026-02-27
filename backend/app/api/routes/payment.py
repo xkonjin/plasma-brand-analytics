@@ -6,7 +6,7 @@
 
 from uuid import UUID
 from typing import Dict, Any, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +28,14 @@ x402_service = X402Service()
 
 class InvoiceRequest(BaseModel):
     payer_address: str
+
+    @field_validator("payer_address")
+    @classmethod
+    def validate_payer_address(cls, v: str) -> str:
+        import re
+        if not re.match(r"^0x[0-9a-fA-F]{40}$", v):
+            raise ValueError("Invalid Ethereum address format. Expected 0x followed by 40 hex characters.")
+        return v
 
 
 class PaymentSubmission(BaseModel):
@@ -86,12 +94,21 @@ async def submit_payment(
             submission.invoiceId, submission.signature, str(client_ip), db
         )
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        # Only expose safe, expected validation errors
+        safe_messages = [
+            "Invoice not found",
+            "Invoice already completed",
+            "Invoice expired",
+            "Invalid signature",
+        ]
+        detail = str(e) if str(e) in safe_messages else "Invalid payment submission"
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
     except Exception:
-        # Log generic error
+        import logging
+        logging.getLogger(__name__).exception("Payment processing failed")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Payment processing failed",
+            detail="Payment processing failed. Please try again.",
         )
 
 
