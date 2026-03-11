@@ -576,3 +576,21 @@ copies or substantial portions of the Software.
 <p align="center">
   Built with ❤️ for startups and marketers
 </p>
+
+<!-- VISUAL_PLANNING_WORKFLOW:START -->
+## Visual Planning Workflow
+
+For non-trivial work, generate a visual artifact before or during implementation planning.
+
+- `/generate-visual-plan` — visual implementation plan
+- `/generate-web-diagram` — architecture/data-flow diagrams
+- `/plan-review` — visual plan-vs-codebase risk review
+- `/diff-review` — visual diff and architecture review
+
+Artifacts are generated as HTML and typically opened from:
+
+- `~/.agent/diagrams/`
+
+When using `/fleetmax`, include the visual artifact path in handoff/report output.
+<!-- VISUAL_PLANNING_WORKFLOW:END -->
+
